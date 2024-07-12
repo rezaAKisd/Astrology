@@ -12,10 +12,10 @@ struct PlanetController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let planets = routes.grouped("planets")
         planets.get { req in
-            index(req: req)
+            try index(req: req)
         }
         planets.post { req in
-            create(req: req)
+            try create(req: req)
         }
     }
 
