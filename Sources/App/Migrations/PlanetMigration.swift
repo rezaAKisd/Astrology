@@ -11,28 +11,15 @@ struct PlanetMigration: AsyncMigration {
     func prepare(on database: Database) async throws {
         try await database.schema("planet")
             .id()
-            .field("title", .string, .required)
+            .field("name", .string, .required)
+            .field("zodiac", .string, .required)
+            .field("degree", .string, .required)
+            .field("minutes", .string, .required)
+            .field("rx", .bool, .required)
             .create()
     }
 
     func revert(on database: Database) async throws {
         try await database.schema("planet").delete()
-    }
-}
-
-struct PlanetTwoMigration: AsyncMigration {
-    func prepare(on database: Database) async throws {
-        try await database.schema("planet")
-            .field("name", .string)
-            .field("image", .string)
-            .update()
-    }
-
-    func revert(on database: Database) async throws {
-        try await database.schema("planet")
-            .deleteField("name")
-            .deleteField("zodiac")
-            .deleteField("image")
-            .update()
     }
 }

@@ -23,7 +23,6 @@ public func configure(_ app: Application) async throws {
     )
 
     let planetMigrator = PlanetMigration()
-    let planetTwoMigrator = PlanetTwoMigration()
 
     //    manual migrate
     //    try await migrator.prepare(on: app.db)
@@ -31,7 +30,6 @@ public func configure(_ app: Application) async throws {
 
     //    auto migrate
     app.migrations.add(planetMigrator)
-    app.migrations.add(planetTwoMigrator)
     try await app.autoMigrate()
 //    try await app.autoRevert()
 
