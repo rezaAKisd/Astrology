@@ -15,7 +15,7 @@ extension String {
             preconditionFailure()
         }
         let degree: String = String(self.prefix(upTo: lowerIndex))
-        let minuets: String = String(self.suffix(from: upperIndex))
+        let minuets: String = String(self.suffix(from: upperIndex).dropLast())
 
         return (degree, minuets)
     }

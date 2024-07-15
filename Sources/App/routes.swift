@@ -1,8 +1,8 @@
 import Vapor
 
 func routes(_ app: Application) throws {
-    app.get { req async in
-        await LoadEphemeris(db: req.db).loadEphemerisAndConjuction()
+    app.get { req async throws in
+        try await LoadEphemeris(db: req.db).loadEphemerisAndConjuction()
         return "ok"
     }
 
