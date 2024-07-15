@@ -11,7 +11,7 @@ import Vapor
 final class Planet: Model, Content {
     static let schema = "planet"
 
-    @ID(custom: .id, generatedBy: .user) var id: Date?
+    @ID(custom: "date", generatedBy: .user) var id: Date?
 
     @Field(key: "name") var name: String
     @Field(key: "zodiac") var zodiac: String
