@@ -26,7 +26,7 @@ struct PlanetController: RouteCollection {
 
     // POST Request /planets route
     func create(req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        let song = try req.content.decode(Planet.self)
-        return song.save(on: req.db).transform(to: .ok)
+        let planets = try req.content.decode(Planet.self)
+        return planets.save(on: req.db).transform(to: .ok)
     }
 }

@@ -6,7 +6,7 @@ import FluentPostgresDriver
 public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-    
+
     // register postgres
     app.databases.use(
         .postgres(
@@ -21,7 +21,20 @@ public func configure(_ app: Application) async throws {
         ),
         as: .psql
     )
-    
+
+    let planetMigrator = PlanetMigration()
+    let planetTwoMigrator = PlanetTwoMigration()
+
+    //    manual migrate
+    //    try await migrator.prepare(on: app.db)
+    //    try await migrator.revert(on: app.db)
+
+    //    auto migrate
+    app.migrations.add(planetMigrator)
+    app.migrations.add(planetTwoMigrator)
+    try await app.autoMigrate()
+//    try await app.autoRevert()
+
     // register routes
     try routes(app)
 }
