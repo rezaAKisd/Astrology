@@ -11,8 +11,9 @@ import Vapor
 final class Planet: Model, Content {
     static let schema = "planet"
 
-    @ID(custom: "date", generatedBy: .user) var id: Date?
+    @ID(custom: "id", generatedBy: .user) var id: String?
 
+    @Field(key: "date") var date: Date
     @Field(key: "name") var name: String
     @Field(key: "zodiac") var zodiac: String
     @Field(key: "degree") var degree: String
@@ -27,8 +28,9 @@ final class Planet: Model, Content {
 
     init() {}
 
-    init(date: Date, planet: String, degree: String, minutes: String, zodiac: String, rx: Bool) {
-        self.id = date
+    init(id: String, date: Date, planet: String, degree: String, minutes: String, zodiac: String, rx: Bool) {
+        self.id = id
+        self.date = date
         self.name = planet
         self.degree = degree
         self.minutes = minutes
