@@ -6,6 +6,8 @@ import FluentPostgresDriver
 public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    
+    app.http.client.configuration.timeout = .init(connect: .hours(.max), read: .hours(.max), write: .hours(.max))
 
     // register postgres
     app.databases.use(
