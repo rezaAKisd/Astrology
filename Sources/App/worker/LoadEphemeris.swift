@@ -13,7 +13,7 @@ class LoadEphemeris {
     let db: Database
     let chunkSize = Int(Environment.get("CHUNCK_SIZE") ?? "50") ?? 50
 
-    private let dateFormatter: DateFormatter = {
+    static private let dateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd-HH-mm"
         dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
@@ -66,7 +66,7 @@ class LoadEphemeris {
 
         for await date in asyncTimestamps {
             if !savedTimestamp.contains(date) {
-                chunk.append(dateFormatter.string(from: date))
+                chunk.append(LoadEphemeris.dateFormatter.string(from: date))
                 if chunk.count >= chunkSize {
                     try await processChunk(chunk)
                     chunk.removeAll()
@@ -97,7 +97,7 @@ class LoadEphemeris {
                     }
                     let (content, failUrl) = await url.fetchContents()
                     guard let content else {
-                        throw Abort(.custom(code: 500, reasonPhrase: "cant load content \(date), \(failUrl)"))
+                        throw Abort(.custom(code: 500, reasonPhrase: "cant load content \(date), \(String(describing: failUrl))"))
                     }
 
                     do {
@@ -116,7 +116,7 @@ class LoadEphemeris {
 
                             planetResult.append(Planet(
                                 id: "\(date)" + "-" + planet + "-" + zodiac + "-" + degree + "-" + minutes + "-" + "\(rx)",
-                                date: self.dateFormatter.date(from: date)!,
+                                date: LoadEphemeris.dateFormatter.date(from: date)!,
                                 planet: planet,
                                 degree: degree,
                                 minutes: minutes,
