@@ -10,8 +10,15 @@ import Vapor
 import SwiftSoup
 
 class LoadEphemeris {
-    let chunkSize = Int(Environment.get("CHUNCK_SIZE") ?? "50") ?? 50
     let db: Database
+    let chunkSize = Int(Environment.get("CHUNCK_SIZE") ?? "50") ?? 50
+
+    private let dateFormatter: DateFormatter = {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd-HH-mm"
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return dateFormatter
+    }()
 
     init(db: Database) {
         self.db = db
@@ -50,11 +57,11 @@ class LoadEphemeris {
     func loadEphemerisAndConjuction() async throws -> HTTPStatus {
         let savedTimestamp = try await savedTimeStamp()
         let asyncTimestamps = try await generateMinuteTimestamps()
-        var chunk: [Date] = []
+        var chunk: [String] = []
 
         for await date in asyncTimestamps {
             if !savedTimestamp.contains(date) {
-                chunk.append(date)
+                chunk.append(dateFormatter.string(from: date))
                 if chunk.count >= chunkSize {
                     try await processChunk(chunk)
                     chunk.removeAll()
@@ -69,9 +76,9 @@ class LoadEphemeris {
         return .ok
     }
 
-    private func processChunk(_ timestamps: [Date]) async throws {
-        var urls: [Date: String] = [:]
-        
+    private func processChunk(_ timestamps: [String]) async throws {
+        var urls: [String: String] = [:]
+
         for date in timestamps {
             urls[date] =
                 "https://horoscopes.astro-seek.com/browse-current-planets/?datum_interval=\(date)&styl_graf=1&narozeni_mesto=&nastaveni_toggle=&aspekty_detail_check=1&orb=0&house_system=none&phours=&hid_fortune_check=on&hid_vertex_check=on&hid_chiron_check=on&hid_lilith_check=on&hid_uzel_check=on&interval_smer=zpet&interval_hodnota=1day&aya="
@@ -80,11 +87,13 @@ class LoadEphemeris {
         try await withThrowingTaskGroup(of: [Planet].self) { group in
             for (date, urlString) in urls {
                 group.addTask {
-                    guard let url = URL(string: urlString) else {
-                        throw Abort(.forbidden)
+                    guard let url = URL(string: urlString.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                        throw Abort(.custom(code: 500, reasonPhrase: "cant load url \(date), \(urlString)"))
                     }
-                    let (content, _) = await url.fetchContents()
-                    guard let content else { throw Abort(.forbidden) }
+                    let (content, failUrl) = await url.fetchContents()
+                    guard let content else {
+                        throw Abort(.custom(code: 500, reasonPhrase: "cant load content \(date), \(failUrl)"))
+                    }
 
                     do {
                         let doc: Document = try SwiftSoup.parse(content)
@@ -102,7 +111,7 @@ class LoadEphemeris {
 
                             planetResult.append(Planet(
                                 id: "\(date)" + "-" + planet + "-" + zodiac + "-" + degree + "-" + minutes + "-" + "\(rx)",
-                                date: date,
+                                date: self.dateFormatter.date(from: date)!,
                                 planet: planet,
                                 degree: degree,
                                 minutes: minutes,
