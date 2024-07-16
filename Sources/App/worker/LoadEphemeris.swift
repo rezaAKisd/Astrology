@@ -10,7 +10,7 @@ import Vapor
 import SwiftSoup
 
 class LoadEphemeris {
-    let chunkSize = 50
+    let chunkSize = Int(Environment.get("CHUNCK_SIZE") ?? "50") ?? 50
     let db: Database
 
     init(db: Database) {
@@ -77,7 +77,6 @@ class LoadEphemeris {
                 "https://horoscopes.astro-seek.com/browse-current-planets/?datum_interval=\(date)&styl_graf=1&narozeni_mesto=&nastaveni_toggle=&aspekty_detail_check=1&orb=0&house_system=none&phours=&hid_fortune_check=on&hid_vertex_check=on&hid_chiron_check=on&hid_lilith_check=on&hid_uzel_check=on&interval_smer=zpet&interval_hodnota=1day&aya="
         }
 
-        let totalCount: CGFloat = CGFloat(urls.count)
         try await withThrowingTaskGroup(of: [Planet].self) { group in
             for (date, urlString) in urls {
                 group.addTask {
