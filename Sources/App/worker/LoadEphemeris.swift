@@ -28,18 +28,23 @@ class LoadEphemeris {
         var calendar = Calendar.current
         calendar.locale = Locale(identifier: "en-US")
         calendar.timeZone = .init(secondsFromGMT: .zero)!
-        let startDateComponents = DateComponents(year: 2009, month: 12, day: 31, hour: 0, minute: 0)
+        let startDateComponents = DateComponents(year: 1999, month: 12, day: 31, hour: 0, minute: 0)
         let startDate = calendar.date(from: startDateComponents)!
         let currentDate = Date()
 
         return AsyncStream { continuation in
             Task {
                 let oneMinute: TimeInterval = 60
+                let sixMonths: TimeInterval = 60 * 60 * 24
                 var date = startDate
 
                 while date <= currentDate {
-                    continuation.yield(date)
-                    date = date.addingTimeInterval(oneMinute)
+                    let endDate = min(date.addingTimeInterval(sixMonths), currentDate)
+
+                    while date <= endDate {
+                        continuation.yield(date)
+                        date = date.addingTimeInterval(oneMinute)
+                    }
                 }
 
                 continuation.finish()
