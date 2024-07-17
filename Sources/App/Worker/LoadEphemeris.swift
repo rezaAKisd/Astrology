@@ -76,19 +76,12 @@ class LoadEphemeris {
     }
 
     private func processChunk(_ timestamps: [Date]) async throws {
-        var urls: [Date: String] = [:]
-
-        for date in timestamps {
-            urls[date] =
-                "https://horoscopes.astro-seek.com/browse-current-planets/?datum_interval=\(date)&styl_graf=1&narozeni_mesto=&nastaveni_toggle=&aspekty_detail_check=1&orb=0&house_system=none&phours=&hid_fortune_check=on&hid_vertex_check=on&hid_chiron_check=on&hid_lilith_check=on&hid_uzel_check=on&interval_smer=zpet&interval_hodnota=1day&aya="
-        }
-
         try await withThrowingTaskGroup(of: [Planet].self) { group in
-            for (date, urlString) in urls {
+            for date in timestamps {
                 group.addTask {
-                    let (content, failUrl) = await urlString.fetchContents()
+                    let (content, failUrl) = await date.fetchContents()
                     guard let content else {
-                        throw Abort(.custom(code: 500, reasonPhrase: "cant load content \(date), \(String(describing: failUrl))"))
+                        throw Abort(.custom(code: 500, reasonPhrase: "cant load content \(content), \(String(describing: failUrl))"))
                     }
 
                     do {
@@ -119,7 +112,7 @@ class LoadEphemeris {
                         print(date)
                         return planetResult
                     } catch {
-                        print("Failed to parse content for URL: \(urlString) with error: \(error)")
+                        print("Failed to parse content for URL: \(date) with error: \(error)")
                         throw Abort(.forbidden)
                     }
                 }
