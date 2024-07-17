@@ -2,7 +2,7 @@ import Vapor
 
 func routes(_ app: Application) throws {
     app.get { req async throws -> HTTPStatus in
-        return try await LoadEphemeris(db: app.db).loadEphemerisAndConjuction()
+        return try await AppDIContainer.shared.loadEphemeris.resolve().loadEphemerisAndConjuction()
     }
 
     app.get("hello") { req async -> String in

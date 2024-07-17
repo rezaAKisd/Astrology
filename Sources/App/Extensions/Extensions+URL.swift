@@ -5,17 +5,20 @@
 //  Created by Reza Akbari on 7/15/24.
 //
 
+import Factory
 import Foundation
+import Vapor
 
 extension URL {
     func fetchContents(retries: Int = 10) async -> (String?, URL?) {
-        var request = URLRequest(url: self)
-        request.httpMethod = "GET"
-        let session = URLSession(configuration: URLSessionConfiguration.default)
+        let client = AppDIContainer.shared.httpClient.resolve()!
         do {
-            let (data, response) = try await session.data(for: request)
-            let contents = String(data: data, encoding: .ascii)
-            return (contents, nil)
+            let response = try await client.get(URI(stringLiteral: self.absoluteString))
+            guard let body = response.body else {
+                throw Abort(.custom(code: 500, reasonPhrase: "can't load content body"))
+            }
+            let html = String(decoding: body.readableBytesView, as: UTF8.self)
+            return (html, nil)
         } catch {
             if retries > 0 {
                 return await self.fetchContents(retries: retries - 1)
@@ -25,3 +28,5 @@ extension URL {
         }
     }
 }
+
+//let response = try await client.get(self)

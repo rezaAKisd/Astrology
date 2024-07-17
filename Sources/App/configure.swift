@@ -1,6 +1,7 @@
 import Vapor
 import Fluent
 import FluentPostgresDriver
+import Factory
 
 // configures your application
 public func configure(_ app: Application) async throws {
@@ -35,6 +36,11 @@ public func configure(_ app: Application) async throws {
     try await app.autoMigrate()
 //    try await app.autoRevert()
 
+    
+    // Factory
+    AppDIContainer.shared.db.register { app.db }
+    AppDIContainer.shared.httpClient.register { app.client }
+    
     // register routes
     try routes(app)
 }

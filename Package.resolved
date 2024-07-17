@@ -1,5 +1,5 @@
 {
-  "originHash" : "62a6e465254f52eae83bccaf713be6a6841e3e5e9bdf966b85a17e27d77e4fb1",
+  "originHash" : "9bc241ff375a49df60305165e0d02abfa21934593a01e5792d1924f8c8a74519",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "9f7932f22ab6f64aafadc14491e694179b7d0f6f",
         "version" : "4.14.3"
+      }
+    },
+    {
+      "identity" : "factory",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hmlongco/Factory.git",
+      "state" : {
+        "revision" : "587995f7d5cc667951d635fbf6b4252324ba0439",
+        "version" : "2.3.2"
       }
     },
     {

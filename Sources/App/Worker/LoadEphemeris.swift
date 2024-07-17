@@ -8,21 +8,11 @@
 import Fluent
 import Vapor
 import SwiftSoup
+import Factory
 
 class LoadEphemeris {
-    let db: Database
+    @Injected(\.appDIContainer.db) private var db: Database!
     let chunkSize = Int(Environment.get("CHUNCK_SIZE") ?? "50") ?? 50
-
-    static private let dateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd-HH-mm"
-        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-        return dateFormatter
-    }()
-
-    init(db: Database) {
-        self.db = db
-    }
 
     func generateMinuteTimestamps() async throws -> AsyncStream<Date> {
         var calendar = Calendar.current
@@ -62,11 +52,11 @@ class LoadEphemeris {
     func loadEphemerisAndConjuction() async throws -> HTTPStatus {
         let savedTimestamp = try await savedTimeStamp()
         let asyncTimestamps = try await generateMinuteTimestamps()
-        var chunk: [String] = []
+        var chunk: [Date] = []
 
         for await date in asyncTimestamps {
             if !savedTimestamp.contains(date) {
-                chunk.append(LoadEphemeris.dateFormatter.string(from: date))
+                chunk.append(date)
                 if chunk.count >= chunkSize {
                     try await processChunk(chunk)
                     chunk.removeAll()
@@ -81,8 +71,8 @@ class LoadEphemeris {
         return .ok
     }
 
-    private func processChunk(_ timestamps: [String]) async throws {
-        var urls: [String: String] = [:]
+    private func processChunk(_ timestamps: [Date]) async throws {
+        var urls: [Date: String] = [:]
 
         for date in timestamps {
             urls[date] =
@@ -116,7 +106,7 @@ class LoadEphemeris {
 
                             planetResult.append(Planet(
                                 id: "\(date)" + "-" + planet + "-" + zodiac + "-" + degree + "-" + minutes + "-" + "\(rx)",
-                                date: LoadEphemeris.dateFormatter.date(from: date)!,
+                                date: date,
                                 planet: planet,
                                 degree: degree,
                                 minutes: minutes,
