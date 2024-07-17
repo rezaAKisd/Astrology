@@ -86,10 +86,7 @@ class LoadEphemeris {
         try await withThrowingTaskGroup(of: [Planet].self) { group in
             for (date, urlString) in urls {
                 group.addTask {
-                    guard let url = URL(string: urlString.trimmingCharacters(in: .whitespacesAndNewlines)) else {
-                        throw Abort(.custom(code: 500, reasonPhrase: "cant load url \(date), \(urlString)"))
-                    }
-                    let (content, failUrl) = await url.fetchContents()
+                    let (content, failUrl) = await urlString.fetchContents()
                     guard let content else {
                         throw Abort(.custom(code: 500, reasonPhrase: "cant load content \(date), \(String(describing: failUrl))"))
                     }
@@ -122,7 +119,7 @@ class LoadEphemeris {
                         print(date)
                         return planetResult
                     } catch {
-                        print("Failed to parse content for URL: \(url) with error: \(error)")
+                        print("Failed to parse content for URL: \(urlString) with error: \(error)")
                         throw Abort(.forbidden)
                     }
                 }

@@ -12,11 +12,11 @@ import FoundationNetworking
 #endif
 import Vapor
 
-extension URL {
-    func fetchContents(retries: Int = 10) async -> (String?, URL?) {
+extension String {
+    func fetchContents(retries: Int = 10) async -> (String?, String?) {
         let client = AppDIContainer.shared.httpClient.resolve()!
         do {
-            let response = try await client.get(URI(stringLiteral: self.absoluteString))
+            let response = try await client.get(URI(stringLiteral: self))
             guard let body = response.body else {
                 throw Abort(.custom(code: 500, reasonPhrase: "can't load content body"))
             }
