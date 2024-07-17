@@ -5,6 +5,10 @@
 //  Created by Reza Akbari on 7/15/24.
 //
 
+import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 import Fluent
 import Vapor
 import SwiftSoup

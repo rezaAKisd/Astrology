@@ -7,6 +7,9 @@
 
 import Factory
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 import Vapor
 
 extension URL {
@@ -28,5 +31,3 @@ extension URL {
         }
     }
 }
-
-//let response = try await client.get(self)
