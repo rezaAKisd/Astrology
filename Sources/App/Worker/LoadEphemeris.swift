@@ -16,24 +16,26 @@ import Factory
 
 class LoadEphemeris {
     @Injected(\.appDIContainer.db) private var db: Database!
-    let chunkSize = Int(Environment.get("CHUNCK_SIZE") ?? "50") ?? 50
+    
+    private let oneDay: TimeInterval = 60 * 60 * 24
+    private let chunkSize = 60 * 60
 
-    func generateMinuteTimestamps() async throws -> AsyncStream<Date> {
+    func generateMinuteTimestamps(startDate: Date?) async throws -> AsyncStream<Date> {
         var calendar = Calendar.current
         calendar.locale = Locale(identifier: "en-US")
         calendar.timeZone = .init(secondsFromGMT: .zero)!
         let startDateComponents = DateComponents(year: 1999, month: 12, day: 31, hour: 0, minute: 0)
-        let startDate = calendar.date(from: startDateComponents)!
+        let startDate = startDate ?? calendar.date(from: startDateComponents)!
         let currentDate = Date()
 
         return AsyncStream { continuation in
             Task {
                 let oneMinute: TimeInterval = 60
-                let sixMonths: TimeInterval = 60 * 60 * 24
+                
                 var date = startDate
 
                 while date <= currentDate {
-                    let endDate = min(date.addingTimeInterval(sixMonths), currentDate)
+                    let endDate = min(date.addingTimeInterval(oneDay), currentDate)
 
                     while date <= endDate {
                         continuation.yield(date)
@@ -48,14 +50,15 @@ class LoadEphemeris {
 
     func savedTimeStamp() async throws -> Set<Date> {
         let timestamps = try await Planet.query(on: db)
+            .sort(\.$date, .descending)
+            .limit(Int(chunkSize))
             .all(\.$date)
-            .sorted()
         return Set(timestamps)
     }
 
     func loadEphemerisAndConjuction() async throws -> HTTPStatus {
         let savedTimestamp = try await savedTimeStamp()
-        let asyncTimestamps = try await generateMinuteTimestamps()
+        let asyncTimestamps = try await generateMinuteTimestamps(startDate: Array(savedTimestamp).first)
         var chunk: [Date] = []
 
         for await date in asyncTimestamps {

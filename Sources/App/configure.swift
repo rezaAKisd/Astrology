@@ -41,6 +41,10 @@ public func configure(_ app: Application) async throws {
     AppDIContainer.shared.db.register { app.db }
     AppDIContainer.shared.httpClient.register { app.client }
     
+    Task {
+        try await AppDIContainer.shared.loadEphemeris.resolve().loadEphemerisAndConjuction()
+    }
+    
     // register routes
     try routes(app)
 }
